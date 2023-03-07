@@ -1,0 +1,268 @@
+body {
+  background-color: #413f54;
+  overflow: hidden;
+}
+
+#initial {
+  height: 270px;
+  background-color: #8A84E2;
+}
+
+#login {
+  height: 310px;
+  background-color: #8A84E2;
+}
+
+.container {
+  max-width: 350px;
+  height: 550px;
+  margin: 20px auto;
+  box-shadow: 0 0 20px #333241;
+  overflow: hidden;
+  font-family: "Montserrat";
+  border-radius: 6px;
+  position: relative;
+}
+
+.header-starter {
+  background: #30292f;
+  padding: 20px;
+}
+
+.bottom-view-starter {
+  padding: 20px;
+  background-color: #30292f;
+  height: 100%;
+}
+
+.header {
+  background: #30292f;
+  padding: 20px;
+}
+
+.navbar {
+  color: #fff;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid #8A84E2;
+}
+.navbar a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.2em;
+}
+
+.main-account {
+  float: right;
+}
+.main-account a {
+  color: #8A84E2;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.top-view {
+  padding-top: 20px;
+}
+.top-view .payment-infos {
+  display: inline-block;
+  vertical-align: top;
+}
+.top-view .payment-infos .current-balance {
+  color: #8A84E2;
+  font-size: 0.75em;
+}
+.top-view .payment-infos .price {
+  color: #fff;
+  font-size: 2.2em;
+  font-weight: 500;
+  padding-top: 5px;
+}
+.top-view .payment-infos .btc {
+  color: #fff;
+  font-size: 0.6em;
+  padding-top: 3px;
+}
+
+.qr-code {
+  float: right;
+  position: relative;
+}
+.qr-code img {
+  width: 60px;
+  height: 60px;
+  background: #fff;
+  padding: 4px;
+}
+
+.ctas {
+  display: block;
+  padding: 30px 0 15px;
+  width: 100%;
+}
+.ctas button {
+  color: #fff;
+  width: 150px;
+  background-color: #8A84E2;
+  border-radius: 50px 50px;
+  padding: 10px 10%;
+  font-size: 0.8em;
+  border: none;
+  cursor: pointer;
+}
+.ctas button:hover {
+  box-shadow: 0 0 5px #716CBA;
+}
+.ctas button:focus {
+  outline: 0;
+}
+.ctas .send {
+  float: right;
+}
+
+.component {
+  display: block;
+  width: 100%;
+  padding-bottom: 20px;
+}
+
+.component button {
+  width: 100%;
+  color: #fff;
+  background-color: #3f4045;
+  border-radius: 50px 50px;
+  padding: 10px 10%;
+  font-size: 0.8em;
+  border: none;
+  cursor: pointer;
+}
+
+.component button:hover {
+  box-shadow: 0 0 5px #36373b;
+}
+.component button:focus {
+  outline: 0;
+}
+
+.login {
+  width: 100%;
+  padding-bottom: 20px;
+  padding-top: 10px;
+}
+
+.login button {
+  width: 100%;
+  color: #fff;
+  background-color: #8A84E2;
+  border-radius: 50px 50px;
+  padding: 10px 10%;
+  font-size: 0.8em;
+  border: none;
+  cursor: pointer;
+}
+
+.login button:hover {
+  box-shadow: 0 0 5px #716CBA;
+}
+.login button:focus {
+  outline: 0;
+}
+
+.login div {
+  padding-right: 15px;
+}
+
+.login div > input {
+  overflow: hidden;
+  text-overflow: ellipsis; 
+}
+
+.login input {
+  width: 100%;
+  color: #fff;
+  background-color: #3f4045;
+  border-radius: 50px 50px;
+  padding: 10px 0% 10px 10px;
+  overflow-x: hidden;
+  font-size: 0.8em;
+  padding-bottom: 10px;
+}
+
+.login input:focus {
+  outline: none;
+}
+
+.login span {
+  display: block;
+  width: 100%;
+  padding: 10px 0px 10px 0px;
+}
+
+.bottom-view {
+  padding: 20px;
+  background-color: #f6f6fa;
+  height: 100%;
+}
+.bottom-view ul {
+  margin: -50px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.bottom-view .payment-card {
+  vertical-align: top;
+  background: #fff;
+  margin-bottom: 15px;
+  box-shadow: 0 0 6px #808080;
+  border-radius: 6px;
+  padding: 10px 18px;
+}
+.bottom-view .payment-card .hour {
+  vertical-align: top;
+  display: inline-block;
+  color: #f9bdbd;
+  font-size: 0.7em;
+  font-weight: 500;
+}
+.bottom-view .payment-card .price {
+  vertical-align: top;
+  float: right;
+  font-size: 0.7em;
+  font-weight: 500;
+}
+.bottom-view .payment-card .price.negative {
+  color: #e46b7b;
+}
+.bottom-view .payment-card .price.positive {
+  color: #a1e060;
+}
+.bottom-view .payment-card .token {
+  font-size: 0.8em;
+  color: #6562ad;
+  font-weight: 500;
+  padding: 10px 0;
+  border-bottom: 0.5px solid #d8d8d8;
+}
+.bottom-view .payment-card .token span {
+  color: #8b91d1;
+  font-size: 0.8em;
+  display: block;
+  padding-top: 5px;
+}
+.bottom-view .payment-card .score {
+  font-size: 1.5em;
+}
+.bottom-view .payment-card .score.blue {
+  color: #355691;
+}
+.bottom-view .payment-card .score.orange {
+  color: #fec74b;
+}
+
+.gradient-overlay {
+  position: absolute;
+  height: 70px;
+  width: 100%;
+  background: linear-gradient(rgba(255, 255, 255, 0), white);
+  bottom: 0;
+  content: "+";
+  z-index: 1;
+}
