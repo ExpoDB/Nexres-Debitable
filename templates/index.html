@@ -156,14 +156,14 @@
     </div>
     <div class="ctas" id="uButton">
       <button class="receive" onclick="backWithdraw()"><i class="fa fa-chevron-circle-left" aria-hidden="true"></i> Back</button>
-      <button class="send" id="withdraw"><i class="fa fa-caret-square-o-up" aria-hidden="true"></i> Withdraw</button>
+      <button class="send" id="withdraw" onclick="withdraw()"><i class="fa fa-caret-square-o-up" aria-hidden="true"></i> Withdraw</button>
     </div>
     <div class="ctas" id="vButton">
       <button class="receive" onclick="backDeposit()"><i class="fa fa-chevron-circle-left" aria-hidden="true"></i> Back</button>
       <button class="send" id="deposit"><i class="fa fa-caret-square-o-down" aria-hidden="true"></i> Deposit</button>
     </div>
     <div class="component" id="wId">
-      <button class="send" id="idaddress">Identification Address</button>
+      <button class="send" id="idaddress" onclick="copy()">Identification Address</button>
       <input type="text" value="" id="address" style="display: none;">
     </div>
     <div class="login" id="wAmount" style="padding-top: 0px;">
@@ -207,27 +207,8 @@
 
 <script>
   function newWallet() {
-    createAccount();
+    createBankAccount();
   }
-
-  function firstFunction() {
-  console.log('First function executed');
-  return Promise.resolve('Result of first function');
-}
-
-function secondFunction(result) {
-  console.log('Second function executed with result:', result);
-  return Promise.resolve('Result of second function');
-}
-
-function thirdFunction(result) {
-  console.log('Third function executed with result:', result);
-}
-
-// Chaining the functions using then()
-firstFunction()
-  .then(secondFunction)
-  .then(thirdFunction);
 
 
   function loginWallet() {
@@ -274,6 +255,19 @@ firstFunction()
     $("#vButton").fadeOut("normal", function() {
       $("#wButton").fadeIn("normal");
     })
+  }
+
+  function copy() {
+    var copyText = document.getElementById("address");
+
+    // Select the text field
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
+
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(copyText.value);
+
+    $("#idaddress").text($("#idaddress").text() == 'Identification Address' ? 'Copied Address!' : 'Identification Address');
   }
 </script>
 
