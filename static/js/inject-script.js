@@ -11,11 +11,12 @@ script.onload = handler;
 // Fire the loading
 head.appendChild(script);
 
-var alt_response = null;
-var flag = "bank";
+var flag = "create";
 var withdraw_amount = null;
-var user_balance = null;
-var bank_balance = null;
+var sender_balance = null;
+var receiver_balance = null;
+var sender_id = null;
+var receiver_id = null;
 
 function handler(){
     console.log('jquery added :)');
@@ -46,13 +47,14 @@ function receiveMessageFromContentScript(event) {
     const message = event.data.data;
     var nexres_response = message;
     console.log(nexres_response);
-    if (typeof nexres_response === 'string' && nexres_response.length == 64) {
-      alt_response = nexres_response;
+    console.log(flag);
+    if (flag === "fetch") {
       window.postMessage({
         direction: "get-page-script",
         id: nexres_response
       }, "*");
-    } else if (typeof nexres_response === 'string' && nexres_response.length == 44 && flag === "bank") {
+      flag = "success";
+    } else if (flag === "create") {
       var bank_amount = 500;
       var bank_message = `"timestamp": ${new Date().getTime()}`;
       var bank_key = nexres_response;
@@ -62,74 +64,91 @@ function receiveMessageFromContentScript(event) {
         amount: bank_amount,
         address: bank_key,
       }, "*");
-    } else if (typeof nexres_response === 'string' && nexres_response.length == 44 && flag === "user") {
-      var user_amount = 500;
-      var user_message = `"timestamp": ${new Date().getTime()}`;
-      var user_key = nexres_response;
-      window.postMessage({
-        direction: "commit-page-script",
-        message: user_message,
-        amount: user_amount,
-        address: user_key,
-      }, "*");
-    } else if (nexres_response.id === alt_response && flag === "bank"){
-      document.getElementById('showBankBalance').innerText = nexres_response.amount;
-      flag = "user";
-      createUserAccount();
-    } else if (nexres_response.id === alt_response && flag === "user"){
-      document.getElementById('showCashBalance').innerText = nexres_response.amount;
-      document.getElementById('address').innerText = nexres_response.publicKey;
-      // Generate and Output QR Code
-      $("#qr").attr("src", "https://chart.googleapis.com/chart?cht=qr&chl=" + nexres_response.publicKey + "&chs=160x160&chld=L|0");
-      $("#loader").delay(1000).fadeOut("slow", function() {
-        $("#follow").fadeIn("normal");
-      });
-    } else if (typeof nexres_response === 'string' && nexres_response.length == 44 && flag === "withdraw") {
-      var filter_key = nexres_response;
-      window.postMessage({
-        direction: "filter-page-script",
-        owner: filter_key,
-        recipient: filter_key,
-      }, "*");
-      flag = "filter";
-    } else if (flag === "filter") {
+      flag = "fetch";
+    } else if (flag === "login") {
       const getTimestamp = (obj) => {
         const new_obj = JSON.parse(obj.asset.replace(/'/g, '"'));
         return new_obj.timestamp;
       };
       const sortedData = nexres_response.sort((a, b) => getTimestamp(b) - getTimestamp(a));
-      user_balance = sortedData[0].amount;
-      bank_balance = sortedData[1].amount;
-      var withdraw_key = sortedData[0].publicKey;
+      document.getElementById('showBankBalance').innerText = sortedData[0].amount;
+      document.getElementById('address').value = sortedData[0].publicKey;
+      localStorage.setItem("publicKey", sortedData[0].publicKey);
+      // Generate and Output QR Code
+      $("#qr").attr("src", "https://chart.googleapis.com/chart?cht=qr&chl=" + sortedData[0].publicKey + "&chs=160x160&chld=L|0");
+      $("#loader").delay(1000).fadeOut("slow", function() {
+        $("#follow").fadeIn("normal");
+      });
+    } else if(flag === "success") {
+      document.getElementById('showBankBalance').innerText = nexres_response.amount;
+      document.getElementById('address').value = nexres_response.publicKey;
+      localStorage.setItem("publicKey", nexres_response.publicKey);
+      // Generate and Output QR Code
+      $("#qr").attr("src", "https://chart.googleapis.com/chart?cht=qr&chl=" + nexres_response.publicKey + "&chs=160x160&chld=L|0");
+      $("#loader").delay(1000).fadeOut("slow", function() {
+        $("#follow").fadeIn("normal");
+      });
+    } else if (flag === "filter-receiver") {
+      const getTimestamp = (obj) => {
+        const new_obj = JSON.parse(obj.asset.replace(/'/g, '"'));
+        return new_obj.timestamp;
+      };
+      const sortedData = nexres_response.sort((a, b) => getTimestamp(b) - getTimestamp(a));
+      sender_balance = sortedData[0].amount;
+      sender_id = sortedData[0].id;
+      owner_filter_key = "";
+      receipient_filter_key = document.getElementById("send-address").value;
+      window.postMessage({
+        direction: "filter-page-script",
+        owner: owner_filter_key,
+        recipient: receipient_filter_key,
+      }, "*");
+      flag = "update";
+    } else if (flag === "withdraw-success") {
+      document.getElementById('showBankBalance').innerText = nexres_response[0].amount;
+      flag = null;
+    } else if (flag === "update") {
+      const getTimestamp = (obj) => {
+        const new_obj = JSON.parse(obj.asset.replace(/'/g, '"'));
+        return new_obj.timestamp;
+      };
+      const sortedData = nexres_response.sort((a, b) => getTimestamp(b) - getTimestamp(a));
+      receiver_balance = sortedData[0].amount;
+      receiver_id = sortedData[0].id;
+
       var withdraw_message = `"timestamp": ${new Date().getTime()}`;
-      if (bank_balance >= withdraw_amount){
-        user_balance = user_balance + withdraw_amount;
-        bank_balance = bank_balance - withdraw_amount;
+      withdraw_amount = parseInt(document.getElementById("amount").value);
+      
+      var sender_address = localStorage.getItem('publicKey');
+      var receiver_address = document.getElementById("send-address").value;
+      
+      if (sender_balance >= withdraw_amount){
+        sender_balance = sender_balance - withdraw_amount;
+        receiver_balance = receiver_balance + withdraw_amount;
+        const valuesList = [
+          {
+            id: sender_id,
+            message: withdraw_message,
+            amount: sender_balance,
+            address: sender_address,
+          },
+          {
+            id: receiver_id,
+            message: withdraw_message,
+            amount: receiver_balance,
+            address: receiver_address,
+          }
+        ];
+  
         window.postMessage({
-          direction: "update-page-script",
-          message: withdraw_message,
-          amount: bank_balance,
-          address: withdraw_key,
+          direction: "update-multi-page-script",
+          values: valuesList,
         }, "*");
-        flag = "update-cash";
+        flag = "withdraw-success";
       } else {
         alert("Insufficient funds.")
       }
-    } else if (flag === "update-cash") {
-      var withdraw_cash_message = `"timestamp": ${new Date().getTime()}`;
-      var update_cash_key = nexres_response.publicKey;
-      window.postMessage({
-        direction: "update-page-script",
-        message: withdraw_cash_message,
-        amount: user_balance,
-        address: update_cash_key,
-      }, "*");
-      flag = "withdraw-success";
-  } else if (flag === "withdraw-success") {
-    document.getElementById('showBankBalance').innerText = bank_balance;
-    document.getElementById('showCashBalance').innerText = user_balance;
-    flag = null;
-  }
+    }
   }
 }
 
@@ -142,17 +161,29 @@ function createBankAccount(){
   }, "*");
 }
 
-function createUserAccount(){
+function login(){
+  $("#login").fadeOut("normal", function(){
+    $("#loader").fadeIn("normal");
+  });
+
+  var id = document.getElementById("id").value;
+
   window.postMessage({
-    direction: "account-page-script",
+    direction: "filter-page-script",
+    owner: "",
+    recipient: id,
   }, "*");
+  flag = "login";
 }
 
 function withdraw(){
-  withdraw_amount = parseInt(document.getElementById("amount").value);
-  flag = "withdraw";
+  var owner_filter_key = "";
+  var receipient_filter_key = localStorage.getItem('publicKey');
   window.postMessage({
-    direction: "account-page-script",
+    direction: "filter-page-script",
+    owner: owner_filter_key,
+    recipient: receipient_filter_key,
   }, "*");
+  flag = "filter-receiver";
 }
 

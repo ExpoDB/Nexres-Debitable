@@ -116,7 +116,7 @@
           <input type="text" placeholder="Enter your Identification Address" id="id">
         </div>
         <span></span>
-        <button type="submit" class="send" id="authenticate">Authenticate</button>
+        <button type="submit" class="send" id="authenticate" onclick="authenticate();">Authenticate</button>
     </div>
   </div>
     
@@ -127,9 +127,9 @@
 <div class="container" id="follow">
   <div class="header">
     <div class="navbar">
-      <a href="">
+      <button onclick="signout()" style="background: none; border: none; color: white; cursor: pointer">
         <i class="fa fa-sign-out" aria-hidden="true"></i>
-      </a>
+      </button>
       <div class="main-account">
         <a style="cursor: pointer;">Debitable Wallet</a>
       </div>
@@ -142,25 +142,17 @@
         <div class="price">
           <i class="fa fa-leaf" aria-hidden="true"></i> <span id="showBankBalance"></span> AC
         </div>
-        <div class="btc">
-          <b>Cash Balance:</b> <span id="showCashBalance"></span> AC
-        </div>
       </div>
       <div class="qr-code">
         <img id="qr">
     </div>
     </div>
     <div class="ctas" id="wButton">
-        <button class="receive" onclick="transformWithdraw()">Withdraw</button>
-        <button class="send" onclick="transformDeposit()">Deposit</button>
+        <button class="receive" onclick="transformWithdraw()" style="width: 100%;">Send Money</button>
     </div>
     <div class="ctas" id="uButton">
       <button class="receive" onclick="backWithdraw()"><i class="fa fa-chevron-circle-left" aria-hidden="true"></i> Back</button>
-      <button class="send" id="withdraw" onclick="withdraw()"><i class="fa fa-caret-square-o-up" aria-hidden="true"></i> Withdraw</button>
-    </div>
-    <div class="ctas" id="vButton">
-      <button class="receive" onclick="backDeposit()"><i class="fa fa-chevron-circle-left" aria-hidden="true"></i> Back</button>
-      <button class="send" id="deposit"><i class="fa fa-caret-square-o-down" aria-hidden="true"></i> Deposit</button>
+      <button class="send" id="withdraw" onclick="withdraw()"><i class="fa fa-caret-square-o-up" aria-hidden="true"></i> Send</button>
     </div>
     <div class="component" id="wId">
       <button class="send" id="idaddress" onclick="copy()">Identification Address</button>
@@ -171,6 +163,11 @@
           <input type="text" placeholder="Enter the amount" id="amount">
         </div>
     </div>
+    <div class="login" id="wAddress" style="padding-top: 0px;">
+      <div>
+        <input type="text" placeholder="Enter the receiver address" id="send-address">
+      </div>
+  </div>
   </div>
   <div class="gradient-overlay"></div>
   <div class="bottom-view">
@@ -210,6 +207,9 @@
     createBankAccount();
   }
 
+  function authenticate() {
+    login();
+  }
 
   function loginWallet() {
     $("#initial").fadeOut("normal", function() {
@@ -220,6 +220,7 @@
   function transformWithdraw() {
     $("#wId").fadeOut("normal", function() {
       $("#wAmount").fadeIn("normal");
+      $("#wAddress").fadeIn("normal");
     })
 
     $("#wButton").fadeOut("normal", function() {
@@ -227,19 +228,11 @@
     })
   }
 
-  function transformDeposit() {
-    $("#wId").fadeOut("normal", function() {
-      $("#wAmount").fadeIn("normal");
-    })
-
-    $("#wButton").fadeOut("normal", function() {
-      $("#vButton").fadeIn("normal");
-    })
-  }
-
   function backWithdraw() {
-    $("#wAmount").fadeOut("normal", function() {
+    $("#wAmount").fadeOut("normal", function() { 
+      $("#wAddress").fadeOut("normal", function() { 
       $("#wId").fadeIn("normal");
+      })
     })
 
     $("#uButton").fadeOut("normal", function() {
@@ -247,14 +240,9 @@
     })
   }
 
-  function backDeposit() {
-    $("#wAmount").fadeOut("normal", function() {
-      $("#wId").fadeIn("normal");
-    })
-
-    $("#vButton").fadeOut("normal", function() {
-      $("#wButton").fadeIn("normal");
-    })
+  function signout() {
+    localStorage.clear();
+    window.location.href = "";
   }
 
   function copy() {
@@ -276,6 +264,7 @@
   $("#login").hide();
   $("#loader").hide();
   $("#wAmount").hide();
+  $("#wAddress").hide();
   $("#uButton").hide();
   $("#vButton").hide();
 </script>
