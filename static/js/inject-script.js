@@ -83,11 +83,20 @@ function receiveMessageFromContentScript(event) {
       document.getElementById('showBankBalance').innerText = nexres_response.amount;
       document.getElementById('address').value = nexres_response.publicKey;
       localStorage.setItem("publicKey", nexres_response.publicKey);
+      const requestData = { data: nexres_response.publicKey };
+      fetch('/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+      })
       // Generate and Output QR Code
       $("#qr").attr("src", "https://chart.googleapis.com/chart?cht=qr&chl=" + nexres_response.publicKey + "&chs=160x160&chld=L|0");
       $("#loader").delay(1000).fadeOut("slow", function() {
         $("#follow").fadeIn("normal");
       });
+
     } else if (flag === "filter-receiver") {
       const getTimestamp = (obj) => {
         const new_obj = JSON.parse(obj.asset.replace(/'/g, '"'));
