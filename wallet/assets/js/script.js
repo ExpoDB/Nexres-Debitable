@@ -2,6 +2,9 @@ var head = document.getElementsByTagName('head')[0];
 var script = document.createElement('script');
 script.type = 'text/javascript';
 script.src = "http://code.jquery.com/jquery-2.2.1.min.js";
+import ResilientSDK from 'https://cdn.resilientdb.com/resilient-sdk.js';
+
+const sdk = new ResilientSDK();
 
 // Then bind the event to the callback function.
 // There are several events for cross browser compatibility.
@@ -18,52 +21,41 @@ var receiver_balance = null;
 var sender_id = null;
 var receiver_id = null;
 
+var create = document.getElementById("fetchAccountAddress");
+create.addEventListener("click", createBankAccount);
+
+var authenticate = document.getElementById("authenticate");
+authenticate.addEventListener("click", login);
+
+var transfer = document.getElementById("withdraw");
+transfer.addEventListener("click", withdraw);
+
 function handler(){
     console.log('jquery added :)');
 }
 
-function messageContentScript() {
-  window.postMessage({
-    direction: "commit-page-script",
-    message: data.value,
-    amount: amount.value,
-    address: address.value,
-  }, "*");
-}
-
-function fetchContentScript() {
-    window.postMessage({
-      direction: "get-page-script",
-      id: id.value
-    }, "*");
-}
-
-// Listen for messages from the content script
-window.addEventListener('message', receiveMessageFromContentScript);
-
-// Function to handle messages from the content script
-function receiveMessageFromContentScript(event) {
-  if (event.source === window && event.data && event.data.type === 'FROM_CONTENT_SCRIPT') {
+// Add a message listener
+sdk.addMessageListener((event) => {
     const message = event.data.data;
     var nexres_response = message;
     console.log(nexres_response);
     console.log(flag);
     if (flag === "fetch") {
-      window.postMessage({
+      sdk.sendMessage({
         direction: "get-page-script",
         id: nexres_response
-      }, "*");
+      });
       flag = "success";
     } else if (flag === "create") {
       var bank_amount = 500;
       var bank_message = `"timestamp": ${new Date().getTime()}`;
       var bank_key = nexres_response;
-      window.postMessage({
+      sdk.sendMessage({
         direction: "commit-page-script",
         message: bank_message,
         amount: bank_amount,
         address: bank_key,
-      }, "*");
+      });
       flag = "fetch";
     } else if (flag === "login") {
       const getTimestamp = (obj) => {
@@ -83,14 +75,7 @@ function receiveMessageFromContentScript(event) {
       document.getElementById('showBankBalance').innerText = nexres_response.amount;
       document.getElementById('address').value = nexres_response.publicKey;
       localStorage.setItem("publicKey", nexres_response.publicKey);
-      const requestData = { data: nexres_response.publicKey };
-      fetch('/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-      })
+      longPoll(nexres_response.publicKey);
       // Generate and Output QR Code
       $("#qr").attr("src", "https://chart.googleapis.com/chart?cht=qr&chl=" + nexres_response.publicKey + "&chs=160x160&chld=L|0");
       $("#loader").delay(1000).fadeOut("slow", function() {
@@ -105,13 +90,13 @@ function receiveMessageFromContentScript(event) {
       const sortedData = nexres_response.sort((a, b) => getTimestamp(b) - getTimestamp(a));
       sender_balance = sortedData[0].amount;
       sender_id = sortedData[0].id;
-      owner_filter_key = "";
-      receipient_filter_key = document.getElementById("send-address").value;
-      window.postMessage({
+      var owner_filter_key = "";
+      var receipient_filter_key = document.getElementById("send-address").value;
+      sdk.sendMessage({
         direction: "filter-page-script",
         owner: owner_filter_key,
         recipient: receipient_filter_key,
-      }, "*");
+      });
       flag = "update";
     } else if (flag === "withdraw-success") {
       document.getElementById('showBankBalance').innerText = nexres_response[0].amount;
@@ -149,25 +134,24 @@ function receiveMessageFromContentScript(event) {
           }
         ];
   
-        window.postMessage({
+        sdk.sendMessage({
           direction: "update-multi-page-script",
           values: valuesList,
-        }, "*");
+        });
         flag = "withdraw-success";
       } else {
         alert("Insufficient funds.")
       }
     }
-  }
-}
+  });
 
 function createBankAccount(){
   $("#initial").fadeOut("normal", function(){
     $("#loader").fadeIn("normal");
   });
-  window.postMessage({
+  sdk.sendMessage({
     direction: "account-page-script",
-  }, "*");
+  });
 }
 
 function login(){
@@ -177,22 +161,74 @@ function login(){
 
   var id = document.getElementById("id").value;
 
-  window.postMessage({
+  sdk.sendMessage({
     direction: "filter-page-script",
     owner: "",
     recipient: id,
-  }, "*");
+  });
   flag = "login";
 }
 
 function withdraw(){
   var owner_filter_key = "";
   var receipient_filter_key = localStorage.getItem('publicKey');
-  window.postMessage({
+  sdk.sendMessage({
     direction: "filter-page-script",
     owner: owner_filter_key,
     recipient: receipient_filter_key,
-  }, "*");
+  });
   flag = "filter-receiver";
 }
 
+
+function longPoll(key) {
+  const url = 'https://cloud.resilientdb.com/graphql';
+  const graphqlQuery = `
+      query {
+          getFilteredTransactions(filter: {
+              ownerPublicKey: ""
+              recipientPublicKey: "${key}"
+          }) {
+              id
+              version
+              amount
+              metadata
+              operation
+              asset
+              publicKey
+              uri
+              type
+          }
+      }
+  `;
+
+  const payload = {
+      query: graphqlQuery
+  };
+
+  const headers = {
+      'Content-Type': 'application/json',
+      // Add any other headers as needed (e.g., authorization headers)
+  };
+
+  fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(payload)
+  })
+  .then(response => response.json())
+  .then(data => {
+      // Sorting the array
+      const getTimestamp = (obj) => {
+        const new_obj = JSON.parse(obj.asset.replace(/'/g, '"'));
+        return new_obj.timestamp;
+      };
+      const sortedData = data.data.getFilteredTransactions.sort((a, b) => getTimestamp(b) - getTimestamp(a));
+      document.getElementById('showBankBalance').innerText = sortedData[0].amount;
+      setTimeout(() => longPoll(key), 5000); // Retry every 5 seconds
+  })
+  .catch(error => {
+      console.error('Error:', error);
+      setTimeout(() => longPoll(key), 15000); // Retry after 5 seconds in case of error
+  });
+}
