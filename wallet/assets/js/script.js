@@ -1,7 +1,7 @@
 var head = document.getElementsByTagName('head')[0];
 var script = document.createElement('script');
 script.type = 'text/javascript';
-script.src = "http://code.jquery.com/jquery-2.2.1.min.js";
+script.src = "https://code.jquery.com/jquery-2.2.1.min.js";
 import ResilientSDK from 'https://cdn.resilientdb.com/resilient-sdk.js';
 
 const sdk = new ResilientSDK();
